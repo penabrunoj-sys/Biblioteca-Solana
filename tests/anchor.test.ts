@@ -1,34 +1,56 @@
 // No imports needed: web3, anchor, pg and more are globally available
 
-describe("Test", () => {
-  it("initialize", async () => {
-    // Generate keypair for the new account
-    const newAccountKp = new web3.Keypair();
+describe("biblioteca", () => {
 
-    // Send transaction
-    const data = new BN(42);
+  it("crear biblioteca", async () => {
+
+    const nombreBiblioteca = "Biblioteca Digital";
+
     const txHash = await pg.program.methods
-      .initialize(data)
+      .crearBiblioteca(nombreBiblioteca)
       .accounts({
-        newAccount: newAccountKp.publicKey,
-        signer: pg.wallet.publicKey,
-        systemProgram: web3.SystemProgram.programId,
+        owner: pg.wallet.publicKey,
       })
-      .signers([newAccountKp])
       .rpc();
-    console.log(`Use 'solana confirm -v ${txHash}' to see the logs`);
 
-    // Confirm transaction
+    console.log(`Tx crear biblioteca: ${txHash}`);
+
     await pg.connection.confirmTransaction(txHash);
 
-    // Fetch the created account
-    const newAccount = await pg.program.account.newAccount.fetch(
-      newAccountKp.publicKey
-    );
-
-    console.log("On-chain data is:", newAccount.data.toString());
-
-    // Check whether the data on-chain is equal to local 'data'
-    assert(data.eq(newAccount.data));
   });
+
+  it("agregar libro", async () => {
+
+    const nombreLibro = "Rust para Solana";
+    const paginas = 120;
+    const precio = new BN(1000000);
+
+    const txHash = await pg.program.methods
+      .agregarLibro(nombreLibro, paginas, precio)
+      .accounts({
+        owner: pg.wallet.publicKey,
+      })
+      .rpc();
+
+    console.log(`Tx agregar libro: ${txHash}`);
+
+    await pg.connection.confirmTransaction(txHash);
+
+  });
+
+  it("ver libros", async () => {
+
+    const txHash = await pg.program.methods
+      .verLibros()
+      .accounts({
+        owner: pg.wallet.publicKey,
+      })
+      .rpc();
+
+    console.log(`Tx ver libros: ${txHash}`);
+
+    await pg.connection.confirmTransaction(txHash);
+
+  });
+
 });
